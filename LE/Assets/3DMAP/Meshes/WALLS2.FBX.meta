@@ -1,0 +1,123 @@
+fileFormatVersion: 2
+guid: f9d37c1202d871a4a992e62d467fa6da
+timeCreated: 1451666225
+licenseType: Free
+ModelImporter:
+  serializedVersion: 18
+  fileIDToRecycleName:
+    100000: ANGLE_CONCAVE
+    100002: ANGLE_CONVEX
+    100004: ANGLE_CONVEX_OVER
+    100006: FILL
+    100008: LINE_A
+    100010: LINE_A_OVER
+    100012: LINE_B
+    100014: LINE_B_OVER
+    100016: //RootNode
+    100018: LINE_A_UNDER
+    100020: LINE_B_UNDER
+    400000: ANGLE_CONCAVE
+    400002: ANGLE_CONVEX
+    400004: ANGLE_CONVEX_OVER
+    400006: FILL
+    400008: LINE_A
+    400010: LINE_A_OVER
+    400012: LINE_B
+    400014: LINE_B_OVER
+    400016: //RootNode
+    400018: LINE_A_UNDER
+    400020: LINE_B_UNDER
+    2300000: ANGLE_CONCAVE
+    2300002: ANGLE_CONVEX
+    2300004: ANGLE_CONVEX_OVER
+    2300006: FILL
+    2300008: LINE_A
+    2300010: LINE_A_OVER
+    2300012: LINE_B
+    2300014: LINE_B_OVER
+    2300016: LINE_A_UNDER
+    2300018: LINE_B_UNDER
+    3300000: ANGLE_CONCAVE
+    3300002: ANGLE_CONVEX
+    3300004: ANGLE_CONVEX_OVER
+    3300006: FILL
+    3300008: LINE_A
+    3300010: LINE_A_OVER
+    3300012: LINE_B
+    3300014: LINE_B_OVER
+    3300016: LINE_A_UNDER
+    3300018: LINE_B_UNDER
+    4300000: FILL
+    4300002: LINE_A
+    4300004: LINE_B
+    4300006: LINE_A_OVER
+    4300008: LINE_B_OVER
+    4300010: ANGLE_CONVEX_OVER
+    4300012: ANGLE_CONCAVE
+    4300014: ANGLE_CONVEX
+    4300016: LINE_B_UNDER
+    4300018: LINE_A_UNDER
+  materials:
+    importMaterials: 1
+    materialName: 0
+    materialSearch: 1
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    optimizeGameObjects: 0
+    motionNodeName: 
+    animationImportErrors: 
+    animationImportWarnings: 
+    animationRetargetingWarnings: 
+    animationDoRetargetingWarnings: 0
+    animationCompression: 1
+    animationRotationError: .5
+    animationPositionError: .5
+    animationScaleError: .5
+    animationWrapMode: 0
+    extraExposedTransformPaths: []
+    clipAnimations: []
+    isReadable: 1
+  meshes:
+    lODScreenPercentages: []
+    globalScale: 1
+    meshCompression: 0
+    addColliders: 0
+    importBlendShapes: 1
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    optimizeMeshForGPU: 1
+    keepQuads: 0
+    weldVertices: 1
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVPackMargin: 4
+    useFileScale: 1
+  tangentSpace:
+    normalSmoothAngle: 60
+    splitTangentsAcrossUV: 1
+    normalImportMode: 0
+    tangentImportMode: 1
+  importAnimation: 1
+  copyAvatar: 0
+  humanDescription:
+    human: []
+    skeleton: []
+    armTwist: .5
+    foreArmTwist: .5
+    upperLegTwist: .5
+    legTwist: .5
+    armStretch: .0500000007
+    legStretch: .0500000007
+    feetSpacing: 0
+    rootMotionBoneName: 
+    hasTranslationDoF: 0
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  animationType: 0
+  humanoidOversampling: 1
+  additionalBone: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
