@@ -6,15 +6,18 @@ using System.Collections.Generic;
 [RequireComponent(typeof(MeshRenderer))]
 public class MeshGenerator : MonoBehaviour {
 
-    public TerrainMap _debug_TerrainMap;
+    //public TerrainMap _debug_TerrainMap;
+    public Level.MapEditor mapEditor;
 
     public List<Node> nodes;
 
     Mesh mesh;
 
     private void Start() {
-        nodes = CalculateNodes(_debug_TerrainMap.map);
+        /*
+        nodes = CalculateNodes(mapEditor.loadedMap.GenerateChunkData(transform.position));
         gameObject.GetComponent<MeshFilter>().mesh = GenerateMesh();
+        */
     }
 
     public class Node {

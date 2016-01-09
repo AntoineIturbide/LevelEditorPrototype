@@ -27,7 +27,7 @@ namespace Level {
             idMap = new int[width, length];
             for (int y = 0; y < length; y++) {
                 for (int x = 0; x < width; x++) {
-                    idMap[x, y] = 0;
+                    idMap[x, y] = 1;
                 }
             }
         }

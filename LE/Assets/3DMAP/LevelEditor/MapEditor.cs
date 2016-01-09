@@ -8,6 +8,8 @@ using System.IO;
 
 namespace Level {
 
+    [RequireComponent(typeof(MeshFilter))]
+    [RequireComponent(typeof(MeshRenderer))]
     public class MapEditor : MonoBehaviour {
 
         public class Chunk {
@@ -15,7 +17,7 @@ namespace Level {
             public int x = 0;
             public int z = 0;
 
-            public int size = 4;
+            public int size = 16;
             
             BoxCollider[,] colliders;
 
@@ -36,8 +38,8 @@ namespace Level {
                 }
 
                 // Reset
+                
                 Collider[] coll = go.GetComponents<Collider>();
-                Debug.Log(coll.Length);
                 for (int i = 0; i < coll.Length; i++) {
                     if(coll[i] != null)
                         DestroyImmediate(coll[i]);
@@ -46,7 +48,6 @@ namespace Level {
                 colliders = new BoxCollider[size, size];
                 for (int _z = z; _z < Mathf.Min(terrain.length, z + size); _z++) {
                     for (int _x = x; _x < Mathf.Min(terrain.width, x + size); _x++) {
-                        Debug.Log("x : " + _x + " - z : " + _z);
                         colliders[_x - x, _z - z] = go.AddComponent<BoxCollider>();
                         colliders[_x - x, _z - z].center = new Vector3(_x, terrain.heightMap[_x, _z] / 2f, _z);
                         colliders[_x - x, _z - z].size = new Vector3(1, terrain.heightMap[_x, _z], 1);
@@ -58,7 +59,7 @@ namespace Level {
 
         }
 
-        Chunk chunk = new Chunk();
+        public Chunk chunk = new Chunk();
 
         public Map loadedMap;
         
@@ -78,7 +79,9 @@ namespace Level {
 
             loadedMap = new Map();
             Chunk chunk = new Chunk();
-            chunk.Load(loadedMap, gameObject);
+            //chunk.Load(loadedMap, gameObject);
+
+            DrawTerrainMesh();
 
             return true;
         }
@@ -89,7 +92,7 @@ namespace Level {
 
             return true;
         }
-
+        
         public bool LoadMap(string path = "") {
 
             if (path == "") {
@@ -112,8 +115,12 @@ namespace Level {
 
                 //EditorUtility.SetDirty(this);
 
+                // Chunk
                 Chunk chunk = new Chunk();
-                chunk.Load(loadedMap, gameObject);
+                //chunk.Load(loadedMap, gameObject);
+
+                // Mesh
+                DrawTerrainMesh();
             }
 
             return true;
@@ -146,7 +153,36 @@ namespace Level {
             return true;
         }
 
+        public bool UpdateChunk() {
+
+            if (loadedMap == null)
+                return false;
+
+            //chunk.Load(loadedMap, gameObject);
+            DrawTerrainMesh();
+
+            return true;
+        }
+
         // Rendering
+
+        public void DrawTerrainMesh() {
+
+            if (loadedMap == null)
+                return;
+
+            MeshFilter mf = GetComponent<MeshFilter>();
+            if (mf != null) {
+                Vector3 position = new Vector3(chunk.x, 0, chunk.z);
+                int[,,] chunkData = loadedMap.GenerateChunkData(position);
+                List<MeshGenerator.Node> nodes = MeshGenerator.CalculateNodes(chunkData);
+                Mesh mesh = MeshGenerator.GenerateMesh(nodes, position);
+                mf.mesh = mesh;
+            }
+
+        }
+
+        // Gizmos
 
         private void OnDrawGizmos () {
 
@@ -162,13 +198,18 @@ namespace Level {
 
         void DrawTerrain(Terrain terrain) {
 
+            if (chunk == null)
+                return;
 
             // Colors
             Color defaultC = new Color(1f, 1f, 1f, 0.75f);
             Color validC = new Color(0f, 1f, 0f, 0.75f);
             float yOffset = 1.05f;
 
+
+
             // Draw Cells
+            /*
             for (int z = 0; z < terrain.length; z++) {
                 for (int x = 0; x < terrain.width; x++) {
                     
@@ -176,6 +217,16 @@ namespace Level {
                         DrawCell(new Vector3(x, terrain.heightMap[x, z] + yOffset, z), validC);
                     } else {
                         DrawCell(new Vector3(x, terrain.heightMap[x, z], z), defaultC);
+                    }
+                }
+            }*/
+            
+            for (int _z = Mathf.Max(0, chunk.z); _z < Mathf.Min(terrain.length, chunk.z + chunk.size); _z++) {
+                for (int _x = Mathf.Max(0, chunk.x); _x < Mathf.Min(terrain.width, chunk.x + chunk.size); _x++) {
+                    if (terrain.idMap[_x, _z] != 0) {
+                        DrawCell(new Vector3(_x, terrain.heightMap[_x, _z] + yOffset, _z), validC);
+                    } else {
+                        DrawCell(new Vector3(_x, terrain.heightMap[_x, _z], _z), defaultC);
                     }
                 }
             }

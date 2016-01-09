@@ -3,8 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 
 public class TerrainHolder : MonoBehaviour {
-
+    
     private static TerrainHolder instance = null;
+    private static bool initialised = false;
 
     [System.Serializable]
     public class Terrain {
@@ -27,15 +28,7 @@ public class TerrainHolder : MonoBehaviour {
 
     private Dictionary<int, Terrain> dictionaryById = new Dictionary<int, Terrain>();
     private Dictionary<string, Terrain> dictionaryByName = new Dictionary<string, Terrain>();
-
-    private void Awake() {
-        if (!LoadDictionaryById())
-            return;
-        if (!LoadDictionaryByName())
-            return;
-        instance = this;
-    }
-
+    
     public bool LoadDictionaryById () {
         foreach (Terrain terrain in terrains) {
             if (dictionaryById.ContainsKey(terrain.id)) {
@@ -62,6 +55,10 @@ public class TerrainHolder : MonoBehaviour {
 
     static public Terrain GetTerrainFromId (int id) {
 
+        if (!initialised) {
+            initialised = Initialise();
+        }
+
         if (instance == null) {
             Debug.LogError("There isn't any TerrainHolder instance.");
             return null;
@@ -79,6 +76,10 @@ public class TerrainHolder : MonoBehaviour {
 
     static public Terrain GetTerrainFromName(string name) {
 
+        if (!initialised) {
+            initialised = Initialise();
+        }
+
         if (instance == null) {
             Debug.LogError("There isn't any TerrainHolder instance.");
             return null;
@@ -92,6 +93,23 @@ public class TerrainHolder : MonoBehaviour {
             return output;
         }
 
+    }
+
+    static public bool Initialise() {
+
+        instance = (TerrainHolder)FindObjectOfType<TerrainHolder>();
+
+        if (instance == null) {
+            Debug.LogError("There isn't any TerrainHolder instance.");
+            return false;
+        }
+
+        if (!instance.LoadDictionaryById())
+            return false;
+        if (!instance.LoadDictionaryByName())
+            return false;
+
+        return true;
     }
 
 }
