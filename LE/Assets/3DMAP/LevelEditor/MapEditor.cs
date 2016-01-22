@@ -182,6 +182,15 @@ namespace Level {
 
         }
 
+        public Vector3 GetBlockPositionFromWorldPoint(Vector3 input) {
+            Vector3 output = new Vector3(
+                (int)(input.x + 0.5f),
+                (int)(input.y + 0.5f) - 0.5f,
+                (int)(input.z + 0.5f)
+                );
+            return output;
+        }
+
         // Gizmos
 
         private void OnDrawGizmos () {

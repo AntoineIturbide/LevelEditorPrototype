@@ -10,6 +10,8 @@ public class MapEditorEditor : Editor {
     public GUIContent buttonText = new GUIContent("Button Load/Save");
     public GUIStyle buttonStyle = GUIStyle.none;
 
+    public bool drag = false;
+
     public override void OnInspectorGUI() {
         //base.OnInspectorGUI();
         
@@ -76,6 +78,23 @@ public class MapEditorEditor : Editor {
             }
         }
 
+        /*
+        Ray ray = HandleUtility.GUIPointToWorldRay((GUIUtility.GUIToScreenPoint(Event.current.mousePosition)));
+        //Debug.DrawRay(ray.origin, ray.direction);
+        Handles.CubeCap(0, ray.origin + ray.direction * 5, Quaternion.identity, 1f);
+        */
+
+        Ray ray = HandleUtility.GUIPointToWorldRay( Event.current.mousePosition);
+        RaycastHit hit = new RaycastHit();
+        if (Physics.Raycast(ray, out hit, 1000.0f)) {
+            Color color = new Color(0, 0, 1, 0.5f);
+            Handles.color = color;
+            Handles.CubeCap(0, t.GetBlockPositionFromWorldPoint(hit.point), Quaternion.identity, 1f);
+
+            if((Event.current.type == EventType.MouseDown && Event.current.button == 0)) {
+                Event.current.type = EventType.used;
+            }
+        }
 
     }
 
