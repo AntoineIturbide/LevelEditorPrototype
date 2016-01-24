@@ -13,15 +13,15 @@ namespace Level {
     public class MapEditor : MonoBehaviour {
 
         public class Chunk {
-            
+
             public int x = 0;
             public int z = 0;
 
-            public int size = 16;
-            
+            public int size = 10;
+
             BoxCollider[,] colliders;
 
-            public Chunk () {
+            public Chunk() {
                 colliders = new BoxCollider[size, size];
             }
 
@@ -30,18 +30,18 @@ namespace Level {
                 return true;
             }
 
-            public bool LoadTerrain (Terrain terrain, GameObject go) {
+            public bool LoadTerrain(Terrain terrain, GameObject go) {
 
-                if(go == null) {
+                if (go == null) {
                     Debug.Log("ERROR");
                     return false;
                 }
 
                 // Reset
-                
+
                 Collider[] coll = go.GetComponents<Collider>();
                 for (int i = 0; i < coll.Length; i++) {
-                    if(coll[i] != null)
+                    if (coll[i] != null)
                         DestroyImmediate(coll[i]);
                 }
 
@@ -59,13 +59,37 @@ namespace Level {
 
         }
 
+        public class Cell {
+            int x = 0;
+            int z = 0;
+            Map map;
+
+            public byte height {
+                get { return map.terrain.heightMap[x, z]; }
+                set { map.terrain.heightMap[x, z] = value; }
+            }
+
+            public byte id {
+                get { return map.terrain.idMap[x, z]; }
+                set { map.terrain.idMap[x, z] = value; }
+            }
+
+            public Cell(int _x, int _z, Map _map) {
+                x = _x;
+                z = _z;
+                map = _map;
+            }
+        }
+
         public Chunk chunk = new Chunk();
 
+        public Cell selectedCell = null;
+
         public Map loadedMap;
-        
+
         [Header("Data")]
         public string saveFileName = "";
-        
+
         // System
 
         public bool Initialise() {
@@ -92,7 +116,7 @@ namespace Level {
 
             return true;
         }
-        
+
         public bool LoadMap(string path = "") {
 
             if (path == "") {
@@ -101,12 +125,12 @@ namespace Level {
                     Application.dataPath,
                     "map");
             }
-            
+
             if (path.Length != 0 && File.Exists(path)) {
                 BinaryFormatter bf = new BinaryFormatter();
                 FileStream file = File.Open(path, FileMode.Open);
                 MapSaveData msd = (MapSaveData)bf.Deserialize(file);
-                if(loadedMap == null)
+                if (loadedMap == null)
                     loadedMap = new Map();
                 loadedMap.Import(msd);
                 file.Close();
@@ -128,12 +152,12 @@ namespace Level {
 
         public bool SaveMap(string path = "") {
 
-            if(loadedMap == null) {
+            if (loadedMap == null) {
                 Debug.LogError("No map is currently loaded");
                 return false;
             }
 
-            if(path == "") {
+            if (path == "") {
                 path = EditorUtility.SaveFilePanel(
                         "Save Map",
                         Application.dataPath,
@@ -164,6 +188,39 @@ namespace Level {
             return true;
         }
 
+        // Edition
+
+        public Vector3 SelectCell(Vector3 position) {
+            int x = (int)(position.x + 0.5f);
+            int z = (int)(position.z + 0.5f);
+
+            selectedCell = new Cell(x, z, loadedMap);
+
+            // 3DPos
+            Vector3 output = new Vector3(
+                x,
+                (int)(position.y + 0.5f) - 0.5f,
+                z
+                );
+            return output;
+        }
+
+        public void DeselectCell() {
+            selectedCell = null;
+        }
+
+        public Vector2 EditCell(Vector2 input) {
+            if(selectedCell != null){
+                byte old = selectedCell.height;
+                selectedCell.height = (byte)Mathf.Clamp(input.y, 0, 8);
+                if(old != selectedCell.height) {
+                    DrawTerrainMesh();
+                }
+                return new Vector2(input.x, selectedCell.height + input.y % 1 );
+            }
+            return Vector2.zero;
+        }
+
         // Rendering
 
         public void DrawTerrainMesh() {
@@ -173,11 +230,25 @@ namespace Level {
 
             MeshFilter mf = GetComponent<MeshFilter>();
             if (mf != null) {
-                Vector3 position = new Vector3(chunk.x, 0, chunk.z);
+                Vector3 position = new Vector3(chunk.x - 1, 0, chunk.z - 1);
                 int[,,] chunkData = loadedMap.GenerateChunkData(position);
                 List<MeshGenerator.Node> nodes = MeshGenerator.CalculateNodes(chunkData);
-                Mesh mesh = MeshGenerator.GenerateMesh(nodes, position);
-                mf.mesh = mesh;
+                // Mesh
+                Mesh mesh;
+                Material[] materials;
+                if (mesh = MeshGenerator.GenerateMesh(nodes, position, out materials)){
+                    mf.sharedMesh.subMeshCount = materials.Length;
+                    // Materials
+                    MeshRenderer mr = GetComponent<MeshRenderer>();
+                    if (mr != null) {
+                        mr.materials = materials;
+                    }
+                }
+                mf.sharedMesh = mesh;
+                MeshCollider mc = GetComponent<MeshCollider>();
+                if(mc != null) {
+                    mc.sharedMesh = mf.sharedMesh;
+                }
             }
 
         }
@@ -230,8 +301,8 @@ namespace Level {
                 }
             }*/
             
-            for (int _z = Mathf.Max(0, chunk.z); _z < Mathf.Min(terrain.length, chunk.z + chunk.size); _z++) {
-                for (int _x = Mathf.Max(0, chunk.x); _x < Mathf.Min(terrain.width, chunk.x + chunk.size); _x++) {
+            for (int _z = Mathf.Max(0, chunk.z - 1); _z < Mathf.Min(terrain.length, chunk.z - 1 + chunk.size); _z++) {
+                for (int _x = Mathf.Max(0, chunk.x - 1); _x < Mathf.Min(terrain.width, chunk.x - 1 + chunk.size); _x++) {
                     if (terrain.idMap[_x, _z] != 0) {
                         DrawCell(new Vector3(_x, terrain.heightMap[_x, _z] + yOffset, _z), validC);
                     } else {

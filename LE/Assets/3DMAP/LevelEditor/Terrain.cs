@@ -6,8 +6,8 @@ namespace Level {
     [System.Serializable]
     public class Terrain {
 
-        public int[,] heightMap;
-        public int[,] idMap;
+        public byte[,] heightMap;
+        public byte[,] idMap;
         
         public int width {
             get { return Mathf.Min(heightMap.GetLength(0), idMap.GetLength(0)); }
@@ -18,16 +18,17 @@ namespace Level {
         }
 
         public Terrain(int width, int length) {
-            heightMap = new int[width, length];
+            heightMap = new byte[width, length];
             for (int y = 0; y < length; y++) {
                 for (int x = 0; x < width; x++) {
-                    heightMap[x, y] = Random.Range(0, 4);
+                    heightMap[x, y] = 0;
+                        //(byte)Random.Range(0, 4);
                 }
             }
-            idMap = new int[width, length];
+            idMap = new byte[width, length];
             for (int y = 0; y < length; y++) {
                 for (int x = 0; x < width; x++) {
-                    idMap[x, y] = 1;
+                    idMap[x, y] = (byte)Random.Range(1, 3);
                 }
             }
         }

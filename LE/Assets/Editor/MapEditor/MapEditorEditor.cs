@@ -9,9 +9,7 @@ public class MapEditorEditor : Editor {
 
     public GUIContent buttonText = new GUIContent("Button Load/Save");
     public GUIStyle buttonStyle = GUIStyle.none;
-
-    public bool drag = false;
-
+    
     public override void OnInspectorGUI() {
         //base.OnInspectorGUI();
         
@@ -57,10 +55,11 @@ public class MapEditorEditor : Editor {
 
     public void OnSceneGUI() {
 
+        // Set Targer
         MapEditor t = (MapEditor)target;
         if (t == null) return;
 
-
+        // Chunk Handle
         EditorGUI.BeginChangeCheck();
         Vector3 chunkPos = Handles.PositionHandle(new Vector3(t.chunk.x, 1, t.chunk.z), Quaternion.identity);
         if (EditorGUI.EndChangeCheck()) {
@@ -77,25 +76,78 @@ public class MapEditorEditor : Editor {
                 t.UpdateChunk();
             }
         }
+        
+        // Edit mode
+        if (!drag) {
+            Ray ray = HandleUtility.GUIPointToWorldRay(Event.current.mousePosition);
+            RaycastHit hit = new RaycastHit();
+            if (Physics.Raycast(ray, out hit, 1000.0f)) {
+                Color color = new Color(0, 0, 1, 0.5f);
+                Handles.color = color;
+                dragGUIPos = t.GetBlockPositionFromWorldPoint(hit.point);
+                Handles.CubeCap(0, dragGUIPos, Quaternion.identity, 1f);
+                
+                if ((Event.current.type == EventType.MouseDown && Event.current.button == 0)) {
+                    drag = true;
+                    dragGUIPos = t.SelectCell(hit.point);
+                    mousePos.x = Event.current.mousePosition.x;
+                    mousePos.y = Event.current.mousePosition.y;
+                    dragValue.y = dragGUIPos.y;
+                    Event.current.type = EventType.used;
+                    Cursor.lockState = CursorLockMode.Confined;
+                }
+            }
+        } else {
 
-        /*
-        Ray ray = HandleUtility.GUIPointToWorldRay((GUIUtility.GUIToScreenPoint(Event.current.mousePosition)));
-        //Debug.DrawRay(ray.origin, ray.direction);
-        Handles.CubeCap(0, ray.origin + ray.direction * 5, Quaternion.identity, 1f);
-        */
 
-        Ray ray = HandleUtility.GUIPointToWorldRay( Event.current.mousePosition);
-        RaycastHit hit = new RaycastHit();
-        if (Physics.Raycast(ray, out hit, 1000.0f)) {
+            //Handles
             Color color = new Color(0, 0, 1, 0.5f);
             Handles.color = color;
-            Handles.CubeCap(0, t.GetBlockPositionFromWorldPoint(hit.point), Quaternion.identity, 1f);
+            Handles.CubeCap(0, dragGUIPos, Quaternion.identity, 1f);
 
-            if((Event.current.type == EventType.MouseDown && Event.current.button == 0)) {
+            // GUI
+            Handles.BeginGUI();
+
+            Vector2 guiPoint = HandleUtility.WorldToGUIPoint(dragGUIPos);
+            Rect r = new Rect(guiPoint.x - 50, guiPoint.y - 50, 100, 100);
+            dragValue.x = GUI.HorizontalSlider(r, dragValue.x, 0.0F, 10.0F);
+            dragValue.y = GUI.VerticalSlider(r, dragValue.y, 0.0F, 10.0F);
+            Handles.EndGUI();
+            
+
+            // Drag
+            if ((Event.current.type == EventType.MouseDrag && Event.current.button == 0)) {
+                float deltaX = (Event.current.mousePosition.x - mousePos.x) * 0.02f;
+                float deltaY = (Event.current.mousePosition.y - mousePos.y) * 0.02f;
+                dragValue.x += deltaX;
+                dragValue.y -= deltaY;
+                dragValue = t.EditCell(dragValue);
+                mousePos.x = Event.current.mousePosition.x;
+                mousePos.y = Event.current.mousePosition.y;
+            }
+
+            // Stop
+            if ((Event.current.type == EventType.MouseUp && Event.current.button == 0)) {
+                drag = false;
                 Event.current.type = EventType.used;
+                Cursor.lockState = CursorLockMode.None;
             }
         }
 
+        if ((Event.current.type == EventType.MouseUp && Event.current.button == 0)) {
+            drag = false;
+            Cursor.lockState = CursorLockMode.None;
+        }
+        
+        if ((Event.current.type == EventType.MouseMove)) {
+            SceneView.RepaintAll();
+        }
     }
+
+    // Edit mode
+    bool drag = false;
+    Vector3 dragGUIPos = Vector3.zero;
+    Vector2 dragValue = Vector2.zero;
+    Vector2 mousePos = Vector2.zero;    
 
 }

@@ -305,7 +305,11 @@ namespace Level {
                             // [Bl][B ][Br]
 
                             // Over
-                            configuration[1, 1] = chunk[x, y + 1, z] == id;
+                            if (y == chunk.GetLength(1) - 1) {
+                                configuration[1, 1] = false;
+                            } else {
+                                configuration[1, 1] = chunk[x, y + 1, z] == id;
+                            }
 
                             // Botom
                             configuration[1, 0] = chunk[x, y, z - 1] == id;
@@ -363,17 +367,66 @@ namespace Level {
         }
 
         // Mesh
-        public static Mesh GenerateMesh(List<Node> nodes, Vector3 position) {
+        public static Mesh GenerateMesh(List<Node> nodes, Vector3 position, out Material[] _materials) {
 
-            CombineInstance[] combine = new CombineInstance[nodes.Count];
+            //List<CombineInstance[]>
+            List<int> materialsID = new List<int>();
+
+            //CombineInstance[] combine = new CombineInstance[nodes.Count];
+            Dictionary<int, List<CombineInstance>> combine = new Dictionary<int, List<CombineInstance>>();
+            // Material
             for (int i = 0; i < nodes.Count; i++) {
+                // Mesh
                 Mesh nodeMesh = nodes[i].GenerateMesh();
-                combine[i].mesh = nodes[i].GenerateMesh();
+                int subMeshIndex;
+                if (materialsID.Contains(nodes[i].terrainId)) {
+                    subMeshIndex = materialsID.IndexOf(nodes[i].terrainId);
+                } else {
+                    materialsID.Add(nodes[i].terrainId);
+                    subMeshIndex = materialsID.IndexOf(nodes[i].terrainId);
+                }
+                List<CombineInstance> ciList;
+                if (! combine.TryGetValue(nodes[i].terrainId, out ciList)) {
+                    ciList = new List<CombineInstance>();
+                    combine.Add(nodes[i].terrainId, ciList);
+                }
+                CombineInstance ci = new CombineInstance();
+                ci.mesh = nodeMesh;
+                ci.transform = Matrix4x4.TRS(position + nodes[i].position, Quaternion.identity, Vector3.one);
+                ciList.Add(ci);
+
+                /*
+                combine[i].mesh = nodeMesh;
+                combine[i].subMeshIndex = subMeshIndex;
                 combine[i].transform = Matrix4x4.TRS(position + nodes[i].position, Quaternion.identity, Vector3.one);
+                */
             }
 
+            // Prepare submeshes
+            CombineInstance[] finalCombine = new CombineInstance[materialsID.Count];
+            for (int i = 0; i < materialsID.Count; i++) {
+
+                List<CombineInstance> ciList;
+                if (combine.TryGetValue(materialsID[i], out ciList)) {
+                    Mesh subMesh = new Mesh();
+                    subMesh.CombineMeshes(ciList.ToArray(), true);
+                    finalCombine[i].mesh = subMesh;
+                    finalCombine[i].transform = Matrix4x4.TRS(Vector3.zero, Quaternion.identity, Vector3.one);
+                }
+            }
+
+            // Merge meshes
             Mesh output = new Mesh();
-            output.CombineMeshes(combine);
+            output.subMeshCount = materialsID.Count;
+            output.CombineMeshes(finalCombine, false);
+
+           //output.CombineMeshes(combine.TryGetValue(, true);
+
+            Material[] materials = new Material[materialsID.Count];
+            for (int i = 0; i < materials.Length; i++) {
+                materials[i] = TerrainHolder.GetTerrainFromId(materialsID[i]).material;
+            }
+            _materials = materials;
             return output;
         }
 
